@@ -1,0 +1,560 @@
+
+
+
+
+Education                                                     A.A. Allka
+Internet-Draft                                     University of Piraeus
+Intended status: Informational                              19 June 2023
+Expires: 21 December 2023
+
+
+                       Semester project for 2023
+                      draft-allka-unipi-project-00
+
+Abstract
+
+   This document specifies the Custom Integer Operations Protocol
+   (CIOP), a protocol for performing basic arithmetic operations on
+   integers over a network.  The protocol defines message formats and
+   operations for addition, averaging, and set operations between a
+   client and server.
+
+Status of This Memo
+
+   This Internet-Draft is submitted in full conformance with the
+   provisions of BCP 78 and BCP 79.
+
+   Internet-Drafts are working documents of the Internet Engineering
+   Task Force (IETF).  Note that other groups may also distribute
+   working documents as Internet-Drafts.  The list of current Internet-
+   Drafts is at https://datatracker.ietf.org/drafts/current/.
+
+   Internet-Drafts are draft documents valid for a maximum of six months
+   and may be updated, replaced, or obsoleted by other documents at any
+   time.  It is inappropriate to use Internet-Drafts as reference
+   material or to cite them other than as "work in progress."
+
+   This Internet-Draft will expire on 21 December 2023.
+
+Copyright Notice
+
+   Copyright (c) 2023 IETF Trust and the persons identified as the
+   document authors.  All rights reserved.
+
+   This document is subject to BCP 78 and the IETF Trust's Legal
+   Provisions Relating to IETF Documents (https://trustee.ietf.org/
+   license-info) in effect on the date of publication of this document.
+   Please review these documents carefully, as they describe your rights
+   and restrictions with respect to this document.  Code Components
+   extracted from this document must include Revised BSD License text as
+   described in Section 4.e of the Trust Legal Provisions and are
+   provided without warranty as described in the Revised BSD License.
+
+
+
+
+Allka                   Expires 21 December 2023                [Page 1]
+
+Internet-Draft          Semester project for 2023              June 2023
+
+
+Table of Contents
+
+   1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   2
+     1.1.  Requirements Language . . . . . . . . . . . . . . . . . .   2
+   2.  Terminology . . . . . . . . . . . . . . . . . . . . . . . . .   2
+   3.  Protocol Overview . . . . . . . . . . . . . . . . . . . . . .   3
+     3.1.  Transport Protocol  . . . . . . . . . . . . . . . . . . .   3
+   4.  Protocol Header Format  . . . . . . . . . . . . . . . . . . .   4
+     4.1.  Request Header  . . . . . . . . . . . . . . . . . . . . .   4
+       4.1.1.  Operation A Request Header  . . . . . . . . . . . . .   4
+       4.1.2.  Operation B Request Header  . . . . . . . . . . . . .   5
+       4.1.3.  Operation C Request Header  . . . . . . . . . . . . .   6
+       4.1.4.  Operation E Request Header  . . . . . . . . . . . . .   6
+     4.2.  Response Header . . . . . . . . . . . . . . . . . . . . .   7
+       4.2.1.  Operation A Response Header . . . . . . . . . . . . .   8
+       4.2.2.  Operation B Response Header . . . . . . . . . . . . .   8
+       4.2.3.  Operation C Response Header . . . . . . . . . . . . .   9
+       4.2.4.  Bad Request Response Header . . . . . . . . . . . . .   9
+   5.  Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  10
+   6.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .  10
+   7.  Security Considerations . . . . . . . . . . . . . . . . . . .  10
+   8.  Informative References  . . . . . . . . . . . . . . . . . . .  10
+   Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .  10
+
+1.  Introduction
+
+   The Custom Integer Operations Protocol (CIOP) is designed to perform
+   basic arithmetic operations on integers transmitted over a network
+   connection.  The protocol supports addition, averaging, and summation
+   of sets of integers.  The protocol is intended for educational
+   purposes and simple applications requiring basic arithmetic
+   operations over a network.
+
+   This document follows the keyword use as specified in RFC2119
+   [RFC2119].
+
+1.1.  Requirements Language
+
+   The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+   "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
+   document are to be interpreted as described in RFC2119 [RFC2119].
+
+2.  Terminology
+
+   This document uses the following terms:
+
+      Protocol - A pre-approved communication language between two end
+      systems.
+
+
+
+Allka                   Expires 21 December 2023                [Page 2]
+
+Internet-Draft          Semester project for 2023              June 2023
+
+
+      Server - The part of the communication protocol that receives
+      arithmetic operation requests and processes them.  In this
+      project, the server performs operations such as addition,
+      averaging, and set summation of integers.
+
+      Client - The part of the communication protocol that initiates
+      requests for arithmetic operations.  In this project, the client
+      sends requests to perform operations on sets of integers to the
+      server.
+
+      byte - An 8-bit octet
+
+3.  Protocol Overview
+
+   The Custom Integer Operations Protocol (CIOP) is a simple protocol
+   that allows a client to request arithmetic operations on integers
+   from a server.  The protocol supports four operations: A, B, C, and
+   E.  Operation A is the addition of a set of integers, operation B is
+   the averaging of a set of integers, operation C is the summation of
+   two sets of integers, and operation closes the connection.
+
+   Figure 1 provides a detailed high-level overview of the message
+   exchange between the server and the client.
+
+                  Server                            Client
+                    |                                  |
+                    |     Some message from client     |
+                    | <------------------------------- |
+                    |                                  |
+                    |    A response from the server    |
+                    | -------------------------------> |
+
+                         Figure 1: Message Exchange
+
+3.1.  Transport Protocol
+
+   For the communication between the Client and the Server, the TCP
+   (Transmission Control Protocol) was used.  TCP was chosen due to the
+   following advantages:
+
+   *  Reliability: TCP ensures reliable delivery of messages through
+      mechanisms such as acknowledgements (ACKs) and retransmissions.
+
+   *  Orderliness: Data is delivered in the correct order as sent,
+      maintaining message consistency.
+
+   *  Flow Control: TCP offers flow control mechanisms that ensure the
+      sender does not overwhelm the receiver with data.
+
+
+
+Allka                   Expires 21 December 2023                [Page 3]
+
+Internet-Draft          Semester project for 2023              June 2023
+
+
+   Port: The communication uses port 12345.  This port is predefined for
+   this specific protocol and ensures that both the Server and Client
+   can locate and connect to each other on this port.
+
+4.  Protocol Header Format
+
+4.1.  Request Header
+
+   This is the first message sent by the Client to initiate the
+   communication process.
+
+   Figure 2 shows the message format that the request header is gonna
+   follow.
+
+      0                   1                   2                   3
+      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |        Message Type           |           Length              |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |   Operation   |  .........................................    |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+
+                    Figure 2: Base Request Header Format
+
+   *  Message Type - 16 bits unsigned integer: The message type.
+
+   *  Length - 16 bits unsigned integer: The total length of the
+      message.
+
+   *  Operation - 8 bits unsigned char: The operation code ('A', 'B',
+      'C', 'E').
+
+4.1.1.  Operation A Request Header
+
+   Figure 3 shows the message format, if the desired operation is A.
+
+      0                   1                   2                   3
+      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |        Message Type           |            Length             |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |   Operation   |  Num_count    |   Padding     |   Padding     |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |    Number     |    Number     |    Number     |   Padding     |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+
+
+
+
+Allka                   Expires 21 December 2023                [Page 4]
+
+Internet-Draft          Semester project for 2023              June 2023
+
+
+                Figure 3: Operation A Request Header Format
+
+   *  Message Type - 16 bits unsigned integer: The message type.
+
+   *  Length - 16 bits unsigned integer: The total length of the
+      message.
+
+   *  Operation - 8 bits unsigned char: The operation code ('A', 'B',
+      'C', 'E').
+
+   *  Num_count - 8 bits unsigned integer: The number of integers.
+
+   *  Padding - 8 bits pad type: Padding for alignment purposes.
+
+   *  Number - 8 bits signed integer: The integers involved in the
+      operation.
+
+4.1.2.  Operation B Request Header
+
+   Figure 4 shows the message format, if the desired operation is B.
+
+      0                   1                   2                   3
+      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |        Message Type           |            Length             |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |   Operation   |  Num_count    |   Padding     |   Padding     |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |    Number     |    Number     |    Number     |   Padding     |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+
+                Figure 4: Operation B Request Header Format
+
+   *  Message Type - 16 bits unsigned integer: The message type.
+
+   *  Length - 16 bits unsigned integer: The total length of the
+      message.
+
+   *  Operation - 8 bits unsigned char: The operation code ('A', 'B',
+      'C', 'E').
+
+   *  Num_count - 8 bits unsigned integer: The number of integers.
+
+   *  Padding - 8 bits pad type: Padding for alignment purposes.
+
+   *  Number - 8 bits unsigned integer: The integers involved in the
+      operation.
+
+
+
+Allka                   Expires 21 December 2023                [Page 5]
+
+Internet-Draft          Semester project for 2023              June 2023
+
+
+4.1.3.  Operation C Request Header
+
+   Figure 5 shows the message format, if the desired operation is C.
+
+      0                   1                   2                   3
+      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |        Message Type           |            Length             |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |   Operation   |  Num_count    |    len(num)   |   Padding     |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |            Number             |            Number             |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |            Number             |            Number             |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |            Number             |            Number             |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+
+                Figure 5: Operation C Request Header Format
+
+   *  Message Type - 16 bits unsigned integer: The message type.
+
+   *  Length - 16 bits unsigned integer: The total length of the
+      message.
+
+   *  Operation - 8 bits unsigned char: The operation code ('A', 'B',
+      'C', 'E').
+
+   *  Num_count - 8 bits unsigned integer: The number of integers.
+
+   *  len(num) - 8 bits unsigned integer: The length of each set of
+      numbers.
+
+   *  Padding - 8 bits pad type: Padding for alignment purposes.
+
+   *  Number - 8 bits unsigned integer: The integers involved in the
+      operation.
+
+4.1.4.  Operation E Request Header
+
+   Figure 6 shows the message format, if the desired operation is E.
+
+
+
+
+
+
+
+
+
+Allka                   Expires 21 December 2023                [Page 6]
+
+Internet-Draft          Semester project for 2023              June 2023
+
+
+      0                   1                   2                   3
+      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |        Message Type           |            Length             |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |   Operation   |   Padding     |   Padding     |   Padding     |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+
+                Figure 6: Operation E Request Header Format
+
+   *  Message Type - 16 bits unsigned integer: The message type.
+
+   *  Length - 16 bits unsigned integer: The total length of the
+      message.
+
+   *  Operation - 8 bits unsigned char: The operation code ('A', 'B',
+      'C', 'E').
+
+   *  Padding - 8 bits pad type: Padding for alignment purposes.
+
+4.2.  Response Header
+
+   This is the message sent by the Server in response to the Client's
+   request.
+
+   Figure 7 shows the message format that the response header is gonna
+   follow.
+
+      0                   1                   2                   3
+      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |        Message Type           | Response Code |   Operation   |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |   .......................................................     |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+
+                   Figure 7: Base Response Header Format
+
+   *  Message Type - 16 bits unsigned integer: The message type.
+
+   *  Response Code - 8 bits unsigned integer: The response code (0 -
+      7).
+
+   *  Operation - 8 bits char: The operation code ('A', 'B', 'C', 'E').
+
+
+
+
+
+Allka                   Expires 21 December 2023                [Page 7]
+
+Internet-Draft          Semester project for 2023              June 2023
+
+
+4.2.1.  Operation A Response Header
+
+   Figure 8 shows the message format of the response if the operation of
+   request was A.
+
+      0                   1                   2                   3
+      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |        Message Type           | Response Code |   Operation   |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |            Result             |    Padding    |    Padding    |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+
+                Figure 8: Operation A Response Header Format
+
+   *  Message Type - 16 bits unsigned integer: The message type.
+
+   *  Response Code - 8 bits unsigned integer: The response code (0 -
+      7).
+
+   *  Operation - 8 bits char: The operation code ('A', 'B', 'C', 'E').
+
+   *  Result - 16 bits signed integer: The result of the operation.
+
+4.2.2.  Operation B Response Header
+
+   Figure 9 shows the message format of the response if the operation of
+   request was B.
+
+      0                   1                   2                   3
+      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |        Message Type           | Response Code |   Operation   |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |                            Result                             |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+
+                Figure 9: Operation B Response Header Format
+
+   *  Message Type - 16 bits unsigned integer: The message type.
+
+   *  Response Code - 8 bits unsigned integer: The response code (0 -
+      7).
+
+   *  Operation - 8 bits char: The operation code ('A', 'B', 'C', 'E').
+
+
+
+
+Allka                   Expires 21 December 2023                [Page 8]
+
+Internet-Draft          Semester project for 2023              June 2023
+
+
+   *  Result - 32 bits float: The result of the operation.
+
+4.2.3.  Operation C Response Header
+
+   Figure 10 shows the message format of the response if the operation
+   of request was C.
+
+      0                   1                   2                   3
+      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |        Message Type           | Response Code |   Operation   |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |                            Result1                            |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |                            Result2                           |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+
+               Figure 10: Operation C Response Header Format
+
+   *  Message Type - 16 bits unsigned integer: The message type.
+
+   *  Response Code - 8 bits unsigned integer: The response code (0 -
+      7).
+
+   *  Operation - 8 bits char: The operation code ('A', 'B', 'C', 'E').
+
+   *  Result1, Result2 - 32 bits unsigned integer: The results of the
+      operation.
+
+4.2.4.  Bad Request Response Header
+
+   Figure 11 shows the message format of the response if the request
+   from the client was not correct.
+
+      0                   1                   2                   3
+      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |        Message Type           | Response Code |   Operation   |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+
+               Figure 11: Bad Request Response Header Format
+
+   *  Message Type - 16 bits unsigned integer: The message type.
+
+   *  Response Code - 8 bits unsigned integer: The response code (0 -
+      7).
+
+
+
+Allka                   Expires 21 December 2023                [Page 9]
+
+Internet-Draft          Semester project for 2023              June 2023
+
+
+   *  Operation - 8 bits char: The operation code ('A', 'B', 'C', 'E').
+
+5.  Acknowledgements
+
+   The authors would like to acknowledge their professors for their
+   guidance and support throughout the development of this
+   specification.  Special thanks to Professor E.  Haleplidis for their
+   invaluable insights and feedback.
+
+6.  IANA Considerations
+
+   This memo makes no requests to IANA.
+
+   You could though! ;)
+
+7.  Security Considerations
+
+   There is no security in this specification.  This is a prototype and
+   all messages should be sent in cleartext over the wire.
+
+   This is a VERY unsecure protocol.  Please do not implement.
+
+8.  Informative References
+
+   [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
+              Requirement Levels", BCP 14, RFC 2119,
+              DOI 10.17487/RFC2119, March 1997,
+              <https://www.rfc-editor.org/info/rfc2119>.
+
+Author's Address
+
+   Arnest Allka
+   University of Piraeus
+   Department of Digital Systems
+   18534 Piraeus
+   Greece
+   Email: arisallkas@gmail.com
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Allka                   Expires 21 December 2023               [Page 10]

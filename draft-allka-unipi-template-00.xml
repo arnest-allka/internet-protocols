@@ -97,16 +97,7 @@
       and simple applications requiring basic arithmetic operations over a
       network.</t>
     <t>This document follows the keyword use as specified in <xref target="RFC2119">RFC2119</xref>.</t>
-    <t>The "t" tag means text paragraph. The list allows you to create lists. There are a couple of options for list styles:</t>
-    <t>
-    <list style ="letters">
-      <t>symbols</t>
-      <t>numbers</t>
-      <t>letters</t>
-      <t>hanging</t>
-    </list>
-  </t>
-	<t>The remainder of this document SHOULD be organized as follows. <xref target="Terminology"/> explains the terminology used in this document. <xref target="ProtoOverview"/> provides a high-level overview of the protocol. Finally, <xref target="Headers"/> provides the details of each protocol header.</t>
+
   <section title="Requirements Language">
     <t>The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
   "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
@@ -126,155 +117,308 @@
     </section>
 
 	<section anchor="ProtoOverview" title="Protocol Overview">
+
+    <t>The Custom Integer Operations Protocol (CIOP) is a simple protocol that allows a client to request arithmetic operations on integers from a server. The protocol supports four operations: A, B, C, and E. Operation A is the addition of a set of integers, operation B is the averaging of a set of integers, operation C is the summation of two sets of integers, and operation closes the connection.</t>
+
+
+
     <t><xref target="Exchange" /> provides a detailed high-level overview of the message exchange between the server and the client.</t>
-    <t>You can use the "xref" tag to point to either "anchors" or "references".</t>
-    <t>To create figures in ascii you can use the "figure" tag as follows:</t>
 
     <figure title="Message Exchange" anchor="Exchange"> 
       <artwork align="center"><![CDATA[
-              Server                            Client
-              |                                  |
-              |     Some message from client     |
-              | <------------------------------- |
-              |                                  |
-              |    A response from the server    |
-              | -------------------------------> |
+  Server                            Client
+    |                                  |
+    |     Some message from client     |
+    | <------------------------------- |
+    |                                  |
+    |    A response from the server    |
+    | -------------------------------> |
 ]]></artwork></figure>
+
+    <section title="Transport Protocol">
+
+      <t>For the communication between the Client and the Server, the TCP (Transmission Control Protocol) was used. TCP was chosen due to the following advantages:</t>
+
+      <list style="symbols">
+        <t>Reliability: TCP ensures reliable delivery of messages through mechanisms such as acknowledgements (ACKs) and retransmissions.</t>
+        <t>Orderliness: Data is delivered in the correct order as sent, maintaining message consistency.</t>
+        <t>Flow Control: TCP offers flow control mechanisms that ensure the sender does not overwhelm the receiver with data.</t>
+      </list>
+
+      <t>Port: The communication uses port 12345. This port is predefined for this specific protocol and ensures that both the Server and Client can locate and connect to each other on this port.</t>
+
+    </section>
   </section>
 
 	<section anchor="Headers" title="Protocol Header Format" >
-    <t>The following headers are required in order to satisfy all the requirements</t>
-    <t>Each header SHOULD be in a different subsection</t>
     
     <section title="Request Header">
-      <t>This is the first message sent by the Client to initiate the communication process...</t>
-      <t>The following figure shows the message format.</t>
-      <t>Headers SHOULD be defined in ascii and each field explained in detail as follows:</t>
+      <t>This is the first message sent by the Client to initiate the communication process.</t>
+      <t><xref target="RequestHeader" /> shows the message format that the request header is gonna follow.</t>
+
       <figure title="Base Request Header Format" anchor="RequestHeader"> 
         <artwork align="center"><![CDATA[
-          0                   1                   2                   3
-          0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-         +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-         |        Message Type           |           Length              |
-         +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-         |   Operation   |  .........................................    |
-         +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-        ]]></artwork>
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|        Message Type           |           Length              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   Operation   |  .........................................    |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+]]>
+      </artwork>
       </figure>
       <t>
         <list style="symbols">
           <t>Message Type - 16 bits unsigned integer: The message type.</t>
           <t>Length - 16 bits unsigned integer: The total length of the message.</t>
-          <t>Operation - 8 bits unsigned integer: The operation code ('A', 'B', 'C', 'E').</t>
+          <t>Operation - 8 bits unsigned char: The operation code ('A', 'B', 'C', 'E').</t>
         </list>
       </t>
+
+      <section title="Operation A Request Header">
+        <t><xref target="RSHFA" /> shows the message format, if the desired operation is A.</t>
+        <figure title="Operation A Request Header Format" anchor="RSHFA"> 
+          <artwork align="center"><![CDATA[
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|        Message Type           |            Length             |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   Operation   |  Num_count    |   Padding     |   Padding     |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|    Number     |    Number     |    Number     |   Padding     |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  ]]>
+          </artwork>
+        </figure>
+        <t>
+          <list style="symbols">
+            <t>Message Type - 16 bits unsigned integer: The message type.</t>
+            <t>Length - 16 bits unsigned integer: The total length of the message.</t>
+            <t>Operation - 8 bits unsigned char: The operation code ('A', 'B', 'C', 'E').</t>
+            <t>Num_count - 8 bits unsigned integer: The number of integers.</t>
+            <t>Padding - 8 bits pad type: Padding for alignment purposes. </t>
+            <t>Number - 8 bits signed integer: The integers involved in the operation.</t>
+          </list>
+        </t>
+      </section>
+  
+      <section title="Operation B Request Header">
+        <t><xref target="RSHFB" /> shows the message format, if the desired operation is B.</t>
+        <figure title="Operation B Request Header Format" anchor="RSHFB"> 
+          <artwork align="center"><![CDATA[
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|        Message Type           |            Length             |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   Operation   |  Num_count    |   Padding     |   Padding     |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|    Number     |    Number     |    Number     |   Padding     |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    ]]>
+          </artwork>
+        </figure>
+        <t>
+          <list style="symbols">
+            <t>Message Type - 16 bits unsigned integer: The message type.</t>
+            <t>Length - 16 bits unsigned integer: The total length of the message.</t>
+            <t>Operation - 8 bits unsigned char: The operation code ('A', 'B', 'C', 'E').</t>
+            <t>Num_count - 8 bits unsigned integer: The number of integers.</t>
+            <t>Padding - 8 bits pad type: Padding for alignment purposes. </t>
+            <t>Number - 8 bits unsigned integer: The integers involved in the operation.</t>
+          </list>
+        </t>
+      </section>
+  
+      <section title="Operation C Request Header">
+        <t><xref target="RSHFC" /> shows the message format, if the desired operation is C.</t>
+        <figure title="Operation C Request Header Format" anchor="RSHFC">
+          <artwork align="center"><![CDATA[
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|        Message Type           |            Length             |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   Operation   |  Num_count    |    len(num)   |   Padding     |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|            Number             |            Number             |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|            Number             |            Number             |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|            Number             |            Number             |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+]]>
+          </artwork>
+        </figure>
+        <t>
+          <list style="symbols">
+            <t>Message Type - 16 bits unsigned integer: The message type.</t>
+            <t>Length - 16 bits unsigned integer: The total length of the message.</t>
+            <t>Operation - 8 bits unsigned char: The operation code ('A', 'B', 'C', 'E').</t>
+            <t>Num_count - 8 bits unsigned integer: The number of integers.</t>
+            <t>len(num) - 8 bits unsigned integer: The length of each set of numbers.</t>
+            <t>Padding - 8 bits pad type: Padding for alignment purposes. </t>
+            <t>Number - 8 bits unsigned integer: The integers involved in the operation.</t>
+          </list>
+        </t>
+      </section>
+  
+      <section title="Operation E Request Header">
+        <t><xref target="RSHFE" /> shows the message format, if the desired operation is E.</t>
+        <figure title="Operation E Request Header Format" anchor="RSHFE">
+          <artwork align="center"><![CDATA[
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|        Message Type           |            Length             |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   Operation   |   Padding     |   Padding     |   Padding     |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    ]]>
+          </artwork>
+        </figure>
+        <t>
+          <list style="symbols">
+            <t>Message Type - 16 bits unsigned integer: The message type.</t>
+            <t>Length - 16 bits unsigned integer: The total length of the message.</t>
+            <t>Operation - 8 bits unsigned char: The operation code ('A', 'B', 'C', 'E').</t>
+            <t>Padding - 8 bits pad type: Padding for alignment purposes. </t>
+          </list>
+        </t>
+      </section>
+
     </section>
 
-    <section title="Operation A Header">
-      <t>This is the first message sent by the Client to initiate the communication process... </t>
-      <t>The following figure shows the message format, if the desired operation is A.</t>
-      <t>Headers SHOULD be defined in ascii and each field explained in detail as follows:</t>
-      <figure title="Operation A Header Format" anchor="RSHFA"> 
+    <section title="Response Header">
+      <t>This is the message sent by the Server in response to the Client's request.</t>
+      <t><xref target="ResponseHeader" /> shows the message format that the response header is gonna follow.</t>
+
+      <figure title="Base Response Header Format" anchor="ResponseHeader"> 
         <artwork align="center"><![CDATA[
-         0                   1                   2                   3
-         0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-        +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-        |        Message Type           |            Length             |
-        +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-        |   Operation   |  Num_count    |   Padding     |   Padding     |
-        +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-        |    Number     |    Number     |    Number     |   Padding     |
-        +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-          ]]>
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|        Message Type           | Response Code |   Operation   |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   .......................................................     |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    ]]> 
         </artwork>
       </figure>
       <t>
         <list style="symbols">
-          <t>Num_count - 8 bits unsigned integer: The number of integers.</t>
-          <t>Padding - 8 bits pad type: Padding for alignment purposes. </t>
-          <t>Number - 8 bits signed integer: The integers involved in the operation.</t>
+          <t>Message Type - 16 bits unsigned integer: The message type.</t>
+          <t>Response Code - 8 bits unsigned integer: The response code (0 - 7).</t>
+          <t>Operation - 8 bits char: The operation code ('A', 'B', 'C', 'E').</t>
         </list>
       </t>
-    </section>
 
-    <section title="Operation B Header">
-      <t>This is the first message sent by the Client to initiate the communication process... </t>
-      <t>The following figure shows the message format, if the desired operation is B.</t>
-      <t>Headers SHOULD be defined in ascii and each field explained in detail as follows:</t>
-      <figure title="Operation B Header Format" anchor="RSHFB"> 
-        <artwork align="center"><![CDATA[
-         0                   1                   2                   3
-         0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-        +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-        |        Message Type           |            Length             |
-        +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-        |   Operation   |  Num_count    |   Padding     |   Padding     |
-        +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-        |    Number     |    Number     |    Number     |   Padding     |
-        +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-            ]]>
-        </artwork>
-      </figure>
-      <t>
-        <list style="symbols">
-          <t>Number - 8 bits unsigned integer: The integers involved in the operation.</t>
-        </list>
-      </t>
-    </section>
+      <section title="Operation A Response Header">
+        <t><xref target="RHA" /> shows the message format of the response if the operation of request was A.</t>
+  
+        <figure title="Operation A Response Header Format" anchor="RHA"> 
+          <artwork align="center"><![CDATA[
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|        Message Type           | Response Code |   Operation   |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|            Result             |    Padding    |    Padding    |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      ]]> 
+          </artwork>
+        </figure>
+        <t>
+          <list style="symbols">
+            <t>Message Type - 16 bits unsigned integer: The message type.</t>
+            <t>Response Code - 8 bits unsigned integer: The response code (0 - 7).</t>
+            <t>Operation - 8 bits char: The operation code ('A', 'B', 'C', 'E').</t>
+            <t>Result - 16 bits signed integer: The result of the operation.</t>
+          </list>
+        </t>
+      </section>
 
-    <section title="Operation C Header">
-      <t>This is the first message sent by the Client to initiate the communication process... </t>
-      <t>The following figure shows the message format, if the desired operation is C.</t>
-      <t>Headers SHOULD be defined in ascii and each field explained in detail as follows:</t>
-      <figure title="Operation C Header Format" anchor="RSHFC">
-        <artwork align="center"><![CDATA[
-         0                   1                   2                   3
-         0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-        +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-        |        Message Type           |            Length             |
-        +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-        |   Operation   |  Num_count    |    len(num)   |   Padding     |
-        +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-        |            Number             |            Number             |
-        +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-        |            Number             |            Number             |
-        +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-        |            Number             |            Padding            |
-        +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-        ]]>
-        </artwork>
-      </figure>
-      <t>
-        <list style="symbols">
-          <t>len(num) - 8 bits unsigned integer: The length of each set of numbers.</t>
-          <t>Number - 8 bits unsigned integer: The integers involved in the operation.</t>
-        </list>
-      </t>
-    </section>
+      <section title="Operation B Response Header">
+        <t><xref target="RHB" /> shows the message format of the response if the operation of request was B.</t>
+  
+        <figure title="Operation B Response Header Format" anchor="RHB"> 
+          <artwork align="center"><![CDATA[
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|        Message Type           | Response Code |   Operation   |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                            Result                             |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      ]]> 
+          </artwork>
+        </figure>
+        <t>
+          <list style="symbols">
+            <t>Message Type - 16 bits unsigned integer: The message type.</t>
+            <t>Response Code - 8 bits unsigned integer: The response code (0 - 7).</t>
+            <t>Operation - 8 bits char: The operation code ('A', 'B', 'C', 'E').</t>
+            <t>Result - 32 bits float: The result of the operation.</t>
+          </list>
+        </t>
+      </section>
 
-    <section title="Header">
-      <t>This is the first message sent by the Client to initiate the communication process... </t>
-      <t>The following figure shows the message format, if the desired operation is E.</t>
-      <t>Headers SHOULD be defined in ascii and each field explained in detail as follows:</t>
-      <figure title="A Header Format" anchor="RSHFE">
-        <artwork align="center"><![CDATA[
-         0                   1                   2                   3
-         0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-        +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-        |        Message Type           |            Length             |
-        +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-        |   Operation   |   Padding     |   Padding     |   Padding     |
-        +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-            ]]>
-        </artwork>
-      </figure>
+      <section title="Operation C Response Header">
+        <t><xref target="RHC" /> shows the message format of the response if the operation of request was C.</t>
+  
+        <figure title="Operation C Response Header Format" anchor="RHC"> 
+          <artwork align="center"><![CDATA[
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|        Message Type           | Response Code |   Operation   |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                            Result1                            |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                            Result2                           |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      ]]> 
+          </artwork>
+        </figure>
+        <t>
+          <list style="symbols">
+            <t>Message Type - 16 bits unsigned integer: The message type.</t>
+            <t>Response Code - 8 bits unsigned integer: The response code (0 - 7).</t>
+            <t>Operation - 8 bits char: The operation code ('A', 'B', 'C', 'E').</t>
+            <t>Result1, Result2 - 32 bits unsigned integer: The results of the operation.</t>
+          </list>
+        </t>
+      </section>
+
+      <section title="Bad Request Response Header">
+        <t><xref target="BRRH" /> shows the message format of the response if the request from the client was not correct.</t>
+  
+        <figure title="Bad Request Response Header Format" anchor="BRRH"> 
+          <artwork align="center"><![CDATA[
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|        Message Type           | Response Code |   Operation   |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      ]]> 
+          </artwork>
+        </figure>
+        <t>
+          <list style="symbols">
+            <t>Message Type - 16 bits unsigned integer: The message type.</t>
+            <t>Response Code - 8 bits unsigned integer: The response code (0 - 7).</t>
+            <t>Operation - 8 bits char: The operation code ('A', 'B', 'C', 'E').</t>
+          </list>
+        </t>
+      </section>
     </section>
 
   </section>
 
   <section anchor="Acknowledgements" title="Acknowledgements">
-    <t>The authors would like to acknowledge all the students who will attempt to define their own specification.</t>
-    <t>The authors would also like to thank all the students for their patients and their participation.</t>
+    <t>The authors would like to acknowledge their professors for their guidance and support throughout the development of this specification. Special thanks to Professor E. Haleplidis for their invaluable insights and feedback.</t>
   </section>
 
 
@@ -293,7 +437,7 @@
 
   <!--  *****BACK MATTER ***** -->
 
-  <!-- <back> -->
+  <back>
     <!-- References split into informative and normative -->
 
     <!-- There are 2 ways to insert reference entries from the citation libraries:
@@ -306,8 +450,9 @@
      directory as the including file. You can also define the XML_LIBRARY environment variable
      with a value containing a set of directories to search.  These can be either in the local
      filing system or remote ones accessed by http (http://domain/dir/... ).-->
-    <!-- <references title="Informative References">
+
+    <references title="Informative References">
         &RFC2119;
     </references>
-  </back> -->
+  </back>
 </rfc>
